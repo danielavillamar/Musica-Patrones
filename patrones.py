@@ -2,52 +2,72 @@
 # 19086
 # EX3.MC Creación de Patrones Rítmicos
 
+import simpleaudio as sa
+from music21 import *
+import time
 
-# Importar los módulos necesarios de la librería 'music'
-from music import *
+# Cargar los sonidos de bombo, caja y hi-hat desde archivos WAV
+kick_sound = sa.WaveObject.from_wave_file("C:/Users/danie/OneDrive/Documentos/Musica/New folder/kick.wav")
+snare_sound = sa.WaveObject.from_wave_file("C:/Users/danie/OneDrive/Documentos/Musica/New folder/snare.wav")
+hihat_sound = sa.WaveObject.from_wave_file("C:/Users/danie/OneDrive/Documentos/Musica/New folder/hithat.wav")
 
-# Definir la cantidad de repeticiones del patrón de batería
-repetitions = 8  # veces para repetir el patrón de batería
+# Función para generar el patrón de batería
+def generar_patron_bateria():
+    # Crear el patrón de bombo
+    bass_drum_pattern = [note.Rest(quarterLength=0.25), note.Note("C")]
+    
+    # Crear la frase de bombo y repetirla 4 veces para 2 compases
+    bass_drum_phrase = stream.Measure()
+    for _ in range(4):
+        for element in bass_drum_pattern:
+            if isinstance(element, note.Note):
+                new_note = note.Note()
+                new_note.duration = element.duration
+                new_note.pitch = element.pitch
+                bass_drum_phrase.append(new_note)
+            elif isinstance(element, note.Rest):
+                # Pausa de duración equivalente
+                pause = note.Rest(quarterLength=element.quarterLength)
+                bass_drum_phrase.append(pause)
 
-##### Definir la estructura de datos
-# Crear la partitura (score) con un título y un tempo de 125 bpm
-score = Score("Patrón de Máquina de Tambor #1", 125.0)
+    # Crear la frase de caja
+    snare_pattern = [note.Rest(quarterLength=0.25), note.Note("G")]
+    snare_phrase = stream.Measure()
+    for _ in range(4):
+        for element in snare_pattern:
+            if isinstance(element, note.Note):
+                new_note = note.Note()
+                new_note.duration = element.duration
+                new_note.pitch = element.pitch
+                snare_phrase.append(new_note)
+            elif isinstance(element, note.Rest):
+                # Pausa de duración equivalente
+                pause = note.Rest(quarterLength=element.quarterLength)
+                snare_phrase.append(pause)
 
-# Crear una parte (part) para los sonidos de batería, utilizando el canal MIDI 9 (percusión)
-drumsPart = Part("Batería", 0, 9)
+    # Crear la frase de hi-hat
+    hihat_pattern = [note.Rest(quarterLength=0.25)] * 16
+    hihat_phrase = stream.Measure()
+    for element in hihat_pattern:
+        if isinstance(element, note.Rest):
+            # Pausa de duración equivalente
+            pause = note.Rest(quarterLength=element.quarterLength)
+            hihat_phrase.append(pause)
 
-# Crear una frase (phrase) para cada sonido de batería (bombo, caja y hi-hat)
-bassDrumPhrase = Phrase(0.0)  # bombo
-snareDrumPhrase = Phrase(0.0)  # caja
-hiHatPhrase = Phrase(0.0)  # hi-hat
+    # Reproducir los patrones
+    play_pattern(bass_drum_phrase, kick_sound)
+    play_pattern(snare_phrase, snare_sound)
+    play_pattern(hihat_phrase, hihat_sound)
 
-##### Crear datos musicales
-# Patrón de bombo (un bombo + un silencio de 1/4 nota) x 4 = 2 compases
-bassPitches = [BDR, REST] * 4
-bassDurations = [QN, QN] * 4
-bassDrumPhrase.addNoteList(bassPitches, bassDurations)
-
-# Patrón de caja (un silencio + una caja de 1/4 nota) x 4 = 2 compases
-snarePitches = [REST, SNR] * 4
-snareDurations = [QN, QN] * 4
-snareDrumPhrase.addNoteList(snarePitches, snareDurations)
-
-# Patrón de hi-hat (15 notas cerradas de 1/8 + 1 nota abierta de 1/8) = 2 compases
-hiHatPitches = [CHH] * 15 + [OHH]
-hiHatDurations = [EN] * 15 + [EN]
-hiHatPhrase.addNoteList(hiHatPitches, hiHatDurations)
-
-##### Repetir el material según sea necesario
-Mod.repeat(bassDrumPhrase, repetitions)
-Mod.repeat(snareDrumPhrase, repetitions)
-Mod.repeat(hiHatPhrase, repetitions)
-
-##### Combinar el material musical
-drumsPart.addPhrase(bassDrumPhrase)
-drumsPart.addPhrase(snareDrumPhrase)
-drumsPart.addPhrase(hiHatPhrase)
-score.addPart(drumsPart)
-
-##### Visualizar y reproducir la partitura
-View.sketch(score)
-Play.midi(score)
+# Función para reproducir una frase de música utilizando sonidos WAV
+def play_pattern(phrase, sound):
+    for note_or_rest in phrase.notesAndRests:
+        if isinstance(note_or_rest, note.Note):
+            sound.play()
+        elif isinstance(note_or_rest, note.Rest):
+            # Pausa de duración equivalente
+            sa.stop_all()
+            time.sleep(note_or_rest.quarterLength)
+            
+# Llamar a la función para generar y reproducir el patrón de batería
+generar_patron_bateria()
